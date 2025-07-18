@@ -1,6 +1,8 @@
+import { useSearchParams } from 'react-router-dom';
 import { Person } from '../types';
 import { Loader } from './Loader';
 import { PersonLink } from './PersonLink';
+import { SearchLink } from './SearchLink';
 
 /* eslint-disable jsx-a11y/control-has-associated-label */
 export const PeopleTable = ({
@@ -12,8 +14,21 @@ export const PeopleTable = ({
   people: Person[];
   selectedSlug: string;
 }) => {
+  const [searchParams] = useSearchParams();
+
   if (isloading) {
     return <Loader />;
+  }
+
+  const currentSort = searchParams.get('sort');
+  const currentOrder = searchParams.get('order');
+
+  let nextOrder = 'asc';
+
+  if (currentSort === 'name' && currentOrder === 'asc') {
+    nextOrder = 'desc';
+  } else if (currentSort === 'name' && currentOrder === 'desc') {
+    nextOrder = ''; // Para remover a ordenação, usar string vazia para evitar erro de tipo
   }
 
   return (
@@ -26,44 +41,46 @@ export const PeopleTable = ({
           <th>
             <span className="is-flex is-flex-wrap-nowrap">
               Name
-              <a href="#/people?sort=name">
+              <SearchLink
+                params={nextOrder ? { sort: 'name', order: nextOrder } : {}}
+              >
                 <span className="icon">
                   <i className="fas fa-sort" />
                 </span>
-              </a>
+              </SearchLink>
             </span>
           </th>
 
           <th>
             <span className="is-flex is-flex-wrap-nowrap">
               Sex
-              <a href="#/people?sort=sex">
+              <SearchLink params={{ sort: 'sex', order: 'desc' }}>
                 <span className="icon">
                   <i className="fas fa-sort" />
                 </span>
-              </a>
+              </SearchLink>
             </span>
           </th>
 
           <th>
             <span className="is-flex is-flex-wrap-nowrap">
               Born
-              <a href="#/people?sort=born&amp;order=desc">
+              <SearchLink params={{ sort: 'born', order: 'desc' }}>
                 <span className="icon">
                   <i className="fas fa-sort-up" />
                 </span>
-              </a>
+              </SearchLink>
             </span>
           </th>
 
           <th>
             <span className="is-flex is-flex-wrap-nowrap">
               Died
-              <a href="#/people?sort=died">
+              <SearchLink params={{ sort: 'died', order: 'desc' }}>
                 <span className="icon">
                   <i className="fas fa-sort" />
                 </span>
-              </a>
+              </SearchLink>
             </span>
           </th>
 

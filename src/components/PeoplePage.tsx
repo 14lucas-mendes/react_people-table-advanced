@@ -9,7 +9,6 @@ import { useLocation } from 'react-router-dom';
 export const PeoplePage = () => {
   const [isloading, setIsLoading] = useState(false);
   const [people, setPeople] = useState<Person[]>([]);
-  const [error, setError] = useState(false);
   const location = useLocation();
 
   // Extrai o slug da URL se existir
@@ -20,7 +19,6 @@ export const PeoplePage = () => {
     getPeople()
       .then(data => {
         setPeople(data);
-        setError(false);
         setTimeout(() => {
           setIsLoading(false);
         }, 300);
@@ -46,8 +44,6 @@ export const PeoplePage = () => {
             <div className="box table-container">
               {isloading ? (
                 <Loader />
-              ) : error ? (
-                <p data-cy="peopleLoadingError">Something went wrong</p>
               ) : people.length === 0 ? (
                 <p data-cy="noPeopleMessage">
                   There are no people on the server
