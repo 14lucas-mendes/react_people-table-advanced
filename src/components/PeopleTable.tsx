@@ -1,35 +1,54 @@
-import { useSearchParams } from 'react-router-dom';
 import { Person } from '../types';
 import { Loader } from './Loader';
 import { PersonLink } from './PersonLink';
 import { SearchLink } from './SearchLink';
+
+type PeopleTableProps = {
+  isloading: boolean;
+  people: Person[];
+  selectedSlug: string;
+  selectedSort: string | null;
+  selectedOrder: string | null;
+  selectedSex: string | null;
+  selectedCenturies: string[] | null;
+  selectedQuery: string | null;
+  selectedBorn: string | null;
+  selectedDied: string | null;
+};
 
 /* eslint-disable jsx-a11y/control-has-associated-label */
 export const PeopleTable = ({
   isloading,
   people,
   selectedSlug,
-}: {
-  isloading: boolean;
-  people: Person[];
-  selectedSlug: string;
-}) => {
-  const [searchParams] = useSearchParams();
-
+  selectedSort,
+  selectedOrder,
+  selectedSex,
+  selectedBorn,
+  selectedDied,
+}: PeopleTableProps) => {
   if (isloading) {
     return <Loader />;
   }
 
-  const currentSort = searchParams.get('sort');
-  const currentOrder = searchParams.get('order');
+  const paramsSort = () => {
+    if (selectedSort !== 'name') {
+      return {
+        sort: 'name',
+        order: null,
+      };
+    } else if (selectedSort === 'name' && selectedOrder === null) {
+      return {
+        sort: 'name',
+        order: 'desc',
+      };
+    }
 
-  let nextOrder = 'asc';
-
-  if (currentSort === 'name' && currentOrder === 'asc') {
-    nextOrder = 'desc';
-  } else if (currentSort === 'name' && currentOrder === 'desc') {
-    nextOrder = ''; // Para remover a ordenação, usar string vazia para evitar erro de tipo
-  }
+    return {
+      sort: null,
+      order: null,
+    };
+  };
 
   return (
     <table
@@ -41,9 +60,7 @@ export const PeopleTable = ({
           <th>
             <span className="is-flex is-flex-wrap-nowrap">
               Name
-              <SearchLink
-                params={nextOrder ? { sort: 'name', order: nextOrder } : {}}
-              >
+              <SearchLink params={paramsSort()}>
                 <span className="icon">
                   <i className="fas fa-sort" />
                 </span>
@@ -54,7 +71,9 @@ export const PeopleTable = ({
           <th>
             <span className="is-flex is-flex-wrap-nowrap">
               Sex
-              <SearchLink params={{ sort: 'sex', order: 'desc' }}>
+              <SearchLink
+                params={selectedSex === 'sex' ? { sex: null } : { sex: 'sex' }}
+              >
                 <span className="icon">
                   <i className="fas fa-sort" />
                 </span>
@@ -65,7 +84,11 @@ export const PeopleTable = ({
           <th>
             <span className="is-flex is-flex-wrap-nowrap">
               Born
-              <SearchLink params={{ sort: 'born', order: 'desc' }}>
+              <SearchLink
+                params={
+                  selectedBorn === 'born' ? { born: null } : { born: 'born' }
+                }
+              >
                 <span className="icon">
                   <i className="fas fa-sort-up" />
                 </span>
@@ -76,7 +99,11 @@ export const PeopleTable = ({
           <th>
             <span className="is-flex is-flex-wrap-nowrap">
               Died
-              <SearchLink params={{ sort: 'died', order: 'desc' }}>
+              <SearchLink
+                params={
+                  selectedDied === 'died' ? { died: null } : { died: 'died' }
+                }
+              >
                 <span className="icon">
                   <i className="fas fa-sort" />
                 </span>

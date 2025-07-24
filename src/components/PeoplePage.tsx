@@ -2,23 +2,36 @@ import { PeopleFilters } from './PeopleFilters';
 import { Loader } from './Loader';
 import { PeopleTable } from './PeopleTable';
 import { Person } from '../types';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { getPeople } from '../api';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useSearchParams } from 'react-router-dom';
 
 export const PeoplePage = () => {
   const [isloading, setIsLoading] = useState(false);
-  const [people, setPeople] = useState<Person[]>([]);
   const location = useLocation();
+  const [sortedPeople, setSortedPeople] = useState<Person[]>([]);
+
+  const [searchParams] = useSearchParams();
+
+  const sort = searchParams.get('sort');
+  const order = searchParams.get('order');
+  const sex = searchParams.get('sex');
+  const centuries = searchParams.getAll('centuries');
+  const query = searchParams.get('query');
+  const born = searchParams.get('born');
+  const died = searchParams.get('died');
 
   // Extrai o slug da URL se existir
   const slug = location.pathname.split('/people/')[1];
+
+  const peopleRef = useRef<Person[]>([]);
 
   useEffect(() => {
     setIsLoading(true);
     getPeople()
       .then(data => {
-        setPeople(data);
+        peopleRef.current = data;
+        setSortedPeople(peopleRef.current);
         setTimeout(() => {
           setIsLoading(false);
         }, 300);
@@ -29,6 +42,31 @@ export const PeoplePage = () => {
         }, 300);
       });
   }, []);
+
+  // eslint-disable-next-line @typescript-eslint/no-shadow
+  const sortItensTable = (sort: string | null, order: string | null) => {
+    if (sort === 'name' && order === null) {
+      setSortedPeople(
+        [...peopleRef.current].sort((a: Person, b: Person) =>
+          a.name.localeCompare(b.name),
+        ),
+      );
+    } else if (sort === 'name' && order === 'desc') {
+      const result = [...peopleRef.current].sort((a: Person, b: Person) =>
+        b.name.localeCompare(a.name),
+      );
+
+      setSortedPeople(result);
+    } else if (sort === null && order === null) {
+      setSortedPeople(peopleRef.current);
+    }
+  };
+
+  useEffect(() => {
+    if (peopleRef.current.length > 0) {
+      sortItensTable(sort, order);
+    }
+  });
 
   return (
     <>
@@ -44,15 +82,22 @@ export const PeoplePage = () => {
             <div className="box table-container">
               {isloading ? (
                 <Loader />
-              ) : people.length === 0 ? (
+              ) : peopleRef.current.length === 0 ? (
                 <p data-cy="noPeopleMessage">
                   There are no people on the server
                 </p>
               ) : (
                 <PeopleTable
                   isloading={isloading}
-                  people={people}
+                  people={sortedPeople}
                   selectedSlug={slug}
+                  selectedSort={sort}
+                  selectedOrder={order}
+                  selectedSex={sex}
+                  selectedCenturies={centuries}
+                  selectedQuery={query}
+                  selectedBorn={born}
+                  selectedDied={died}
                 />
               )}
             </div>
