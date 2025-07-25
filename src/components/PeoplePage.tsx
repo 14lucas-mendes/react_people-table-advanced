@@ -2,71 +2,60 @@ import { PeopleFilters } from './PeopleFilters';
 import { Loader } from './Loader';
 import { PeopleTable } from './PeopleTable';
 import { Person } from '../types';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { getPeople } from '../api';
 import { useLocation, useSearchParams } from 'react-router-dom';
 
+const sortItensTable = (
+  sort: string | null,
+  order: string | null,
+  people: Person[],
+): Person[] => {
+  if (sort === 'name' && order === null) {
+    return [...people].sort((a: Person, b: Person) =>
+      a.name.localeCompare(b.name),
+    );
+  } else if (sort === 'name' && order === 'desc') {
+    return [...people].sort((a: Person, b: Person) =>
+      b.name.localeCompare(a.name),
+    );
+  }
+
+  return people;
+};
+
 export const PeoplePage = () => {
-  const [isloading, setIsLoading] = useState(false);
+  const [isloading, setIsLoading] = useState(true);
   const location = useLocation();
-  const [sortedPeople, setSortedPeople] = useState<Person[]>([]);
+  const [people, setPeople] = useState<Person[]>([]);
 
   const [searchParams] = useSearchParams();
 
-  const sort = searchParams.get('sort');
-  const order = searchParams.get('order');
-  const sex = searchParams.get('sex');
-  const centuries = searchParams.getAll('centuries');
-  const query = searchParams.get('query');
-  const born = searchParams.get('born');
-  const died = searchParams.get('died');
+  const sortParams = {
+    sort: searchParams.get('sort'),
+    order: searchParams.get('order'),
+    sex: searchParams.get('sex'),
+    centuries: searchParams.getAll('centuries'),
+    query: searchParams.get('query'),
+    born: searchParams.get('born'),
+    died: searchParams.get('died'),
+  };
 
   // Extrai o slug da URL se existir
   const slug = location.pathname.split('/people/')[1];
-
-  const peopleRef = useRef<Person[]>([]);
 
   useEffect(() => {
     setIsLoading(true);
     getPeople()
       .then(data => {
-        peopleRef.current = data;
-        setSortedPeople(peopleRef.current);
-        setTimeout(() => {
-          setIsLoading(false);
-        }, 300);
+        setPeople(data);
       })
-      .catch(() => {
+      .finally(() => {
         setTimeout(() => {
           setIsLoading(false);
         }, 300);
       });
   }, []);
-
-  // eslint-disable-next-line @typescript-eslint/no-shadow
-  const sortItensTable = (sort: string | null, order: string | null) => {
-    if (sort === 'name' && order === null) {
-      setSortedPeople(
-        [...peopleRef.current].sort((a: Person, b: Person) =>
-          a.name.localeCompare(b.name),
-        ),
-      );
-    } else if (sort === 'name' && order === 'desc') {
-      const result = [...peopleRef.current].sort((a: Person, b: Person) =>
-        b.name.localeCompare(a.name),
-      );
-
-      setSortedPeople(result);
-    } else if (sort === null && order === null) {
-      setSortedPeople(peopleRef.current);
-    }
-  };
-
-  useEffect(() => {
-    if (peopleRef.current.length > 0) {
-      sortItensTable(sort, order);
-    }
-  });
 
   return (
     <>
@@ -82,22 +71,20 @@ export const PeoplePage = () => {
             <div className="box table-container">
               {isloading ? (
                 <Loader />
-              ) : peopleRef.current.length === 0 ? (
+              ) : people.length === 0 ? (
                 <p data-cy="noPeopleMessage">
                   There are no people on the server
                 </p>
               ) : (
                 <PeopleTable
                   isloading={isloading}
-                  people={sortedPeople}
+                  people={sortItensTable(
+                    sortParams.sort,
+                    sortParams.order,
+                    people,
+                  )}
                   selectedSlug={slug}
-                  selectedSort={sort}
-                  selectedOrder={order}
-                  selectedSex={sex}
-                  selectedCenturies={centuries}
-                  selectedQuery={query}
-                  selectedBorn={born}
-                  selectedDied={died}
+                  params={sortParams}
                 />
               )}
             </div>

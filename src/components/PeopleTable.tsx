@@ -7,37 +7,42 @@ type PeopleTableProps = {
   isloading: boolean;
   people: Person[];
   selectedSlug: string;
-  selectedSort: string | null;
-  selectedOrder: string | null;
-  selectedSex: string | null;
-  selectedCenturies: string[] | null;
-  selectedQuery: string | null;
-  selectedBorn: string | null;
-  selectedDied: string | null;
+  params: {
+    sort: string | null;
+    order: string | null;
+    sex: string | null;
+    centuries: string[];
+    query: string | null;
+    born: string | null;
+    died: string | null;
+  };
 };
+
+const itensHeaders = [
+  { name: 'Name' },
+  { name: 'Sex' },
+  { name: 'Born' },
+  { name: 'Died' },
+];
 
 /* eslint-disable jsx-a11y/control-has-associated-label */
 export const PeopleTable = ({
   isloading,
   people,
   selectedSlug,
-  selectedSort,
-  selectedOrder,
-  selectedSex,
-  selectedBorn,
-  selectedDied,
+  params,
 }: PeopleTableProps) => {
   if (isloading) {
     return <Loader />;
   }
 
   const paramsSort = () => {
-    if (selectedSort !== 'name') {
+    if (params.sort !== 'name') {
       return {
         sort: 'name',
         order: null,
       };
-    } else if (selectedSort === 'name' && selectedOrder === null) {
+    } else if (params.sort === 'name' && params.order === null) {
       return {
         sort: 'name',
         order: 'desc',
@@ -57,60 +62,18 @@ export const PeopleTable = ({
     >
       <thead>
         <tr>
-          <th>
-            <span className="is-flex is-flex-wrap-nowrap">
-              Name
-              <SearchLink params={paramsSort()}>
-                <span className="icon">
-                  <i className="fas fa-sort" />
-                </span>
-              </SearchLink>
-            </span>
-          </th>
-
-          <th>
-            <span className="is-flex is-flex-wrap-nowrap">
-              Sex
-              <SearchLink
-                params={selectedSex === 'sex' ? { sex: null } : { sex: 'sex' }}
-              >
-                <span className="icon">
-                  <i className="fas fa-sort" />
-                </span>
-              </SearchLink>
-            </span>
-          </th>
-
-          <th>
-            <span className="is-flex is-flex-wrap-nowrap">
-              Born
-              <SearchLink
-                params={
-                  selectedBorn === 'born' ? { born: null } : { born: 'born' }
-                }
-              >
-                <span className="icon">
-                  <i className="fas fa-sort-up" />
-                </span>
-              </SearchLink>
-            </span>
-          </th>
-
-          <th>
-            <span className="is-flex is-flex-wrap-nowrap">
-              Died
-              <SearchLink
-                params={
-                  selectedDied === 'died' ? { died: null } : { died: 'died' }
-                }
-              >
-                <span className="icon">
-                  <i className="fas fa-sort" />
-                </span>
-              </SearchLink>
-            </span>
-          </th>
-
+          {itensHeaders.map(item => (
+            <th key={item.name}>
+              <span className="is-flex is-flex-wrap-nowrap">
+                {item.name}
+                <SearchLink params={paramsSort()}>
+                  <span className="icon">
+                    <i className="fas fa-sort" />
+                  </span>
+                </SearchLink>
+              </span>
+            </th>
+          ))}
           <th>Mother</th>
           <th>Father</th>
         </tr>
