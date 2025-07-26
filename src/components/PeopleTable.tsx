@@ -36,21 +36,34 @@ export const PeopleTable = ({
     return <Loader />;
   }
 
-  const paramsSort = () => {
-    if (params.sort !== 'name') {
+  const paramsSort = (columnName: keyof Person) => {
+    // Se não está ordenando por esta coluna OU está ordenando por outra coluna
+    if (params.sort !== columnName) {
       return {
-        sort: 'name',
-        order: null,
-      };
-    } else if (params.sort === 'name' && params.order === null) {
-      return {
-        sort: 'name',
-        order: 'desc',
+        sort: columnName,
+        order: null, // <- Ascendente (padrão)
       };
     }
 
+    // Se está ordenando por esta coluna e order é null (ascendente)
+    if (params.sort === columnName && params.order === null) {
+      return {
+        sort: columnName,
+        order: 'desc', // <- Muda para descendente
+      };
+    }
+
+    // Se está ordenando por esta coluna e order é 'desc' (descendente)
+    if (params.sort === columnName && params.order === 'desc') {
+      return {
+        sort: null,
+        order: null, // <- Remove ordenação (normal)
+      };
+    }
+
+    // Fallback
     return {
-      sort: null,
+      sort: columnName,
       order: null,
     };
   };
@@ -66,7 +79,9 @@ export const PeopleTable = ({
             <th key={item.name}>
               <span className="is-flex is-flex-wrap-nowrap">
                 {item.name}
-                <SearchLink params={paramsSort()}>
+                <SearchLink
+                  params={paramsSort(item.name.toLowerCase() as keyof Person)}
+                >
                   <span className="icon">
                     <i className="fas fa-sort" />
                   </span>

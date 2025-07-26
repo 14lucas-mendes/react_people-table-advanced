@@ -11,17 +11,18 @@ const sortItensTable = (
   order: string | null,
   people: Person[],
 ): Person[] => {
-  if (sort === 'name' && order === null) {
-    return [...people].sort((a: Person, b: Person) =>
-      a.name.localeCompare(b.name),
-    );
-  } else if (sort === 'name' && order === 'desc') {
-    return [...people].sort((a: Person, b: Person) =>
-      b.name.localeCompare(a.name),
-    );
+  if (!sort) {
+    return people;
   }
 
-  return people;
+  return [...people].sort((a: Person, b: Person) => {
+    const aValue = String(a[sort as keyof Person] || '');
+    const bValue = String(b[sort as keyof Person] || '');
+
+    return order === 'desc'
+      ? bValue.localeCompare(aValue)
+      : aValue.localeCompare(bValue);
+  });
 };
 
 export const PeoplePage = () => {
